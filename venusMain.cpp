@@ -13,8 +13,6 @@ MIT licence via mit-license.org held by author
 #include "src/tags.hpp"
 using namespace std;
 
-#define TIMER
-
 struct options
 {
     string inFile;

@@ -15,6 +15,10 @@ which takes .Venus files and outputs a possible .tasl
 source.
 
 Venus is a port of Tera, a base-3 CPU simulation, to binary.
+It uses the same .tasl language as Tera.
+
+Deco was the decompiler for Tera, so deCO VEnus I guess?
+I don't remember why I named it this.
 
 ## Use
 

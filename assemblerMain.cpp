@@ -100,10 +100,10 @@ int main(const int argc, const char *argv[])
     }
 
     // Look for .ter suffix on output
-    if (inputFileName.size() < 4 || inputFileName.substr(inputFileName.size() - 4) != ".ven")
+    if (outputFileName.size() < 4 || outputFileName.substr(outputFileName.size() - 4) != ".ven")
     {
         // Ensure it's not a venus-shebang file
-        if (inputFileName.size() < 6 || inputFileName.substr(inputFileName.size() - 6) != ".vensh")
+        if (outputFileName.size() < 6 || outputFileName.substr(outputFileName.size() - 6) != ".vensh")
         {
             cout << tags::yellow_bold
                  << "Warning! The proper file suffix for ternary compiled files is .ven\n"

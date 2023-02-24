@@ -68,7 +68,7 @@ int cpu2::doInstr()
     addr = mem + *instrPointer + 1;
     lit = mem + *instrPointer + 2;
 
-    int temp;
+    char temp;
     switch (*instruc)
     {
     case kill:

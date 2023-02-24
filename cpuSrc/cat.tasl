@@ -1,0 +1,22 @@
+.OUT 1
+.END 1
+
+put END -0
+
+put OUT 1111
+
+orNeqV OUT END
+ifControl
+    inp OUT 1
+    out OUT 1
+    andNeqV OUT END
+    jumpBack 0 4
+endif
+
+put OUT ENDL
+out OUT 1
+
+~END
+~OUT
+
+kill

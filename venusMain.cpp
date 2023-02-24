@@ -13,6 +13,8 @@ MIT licence via mit-license.org held by author
 #include "src/tags.hpp"
 using namespace std;
 
+#define TIMER
+
 struct options
 {
     string inFile;
@@ -107,12 +109,6 @@ int main(const int argc, const char *argv[])
     auto end = chrono::high_resolution_clock::now();
     long int ellapsed = chrono::duration_cast<chrono::nanoseconds>(end - begin).count();
     cout << "Nanoseconds: " << ellapsed << '\n';
-
-    cout << "Itemized:\n";
-    for (auto item : instrTimes)
-    {
-        cout << "\tInstr: " << item.first << " av ns: " << item.second.first / item.second.second << '\n';
-    }
 #else
     while (c.doInstr() == 0)
     {

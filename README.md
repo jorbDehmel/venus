@@ -52,7 +52,8 @@ of a COMPILED .ven program to make it executable anywhere.
 
 `#!/usr/bin/venus` (followed by a newline)
 
-Then, use the following command on the file.
+You may or may not have to use the following command on the file
+(depending on your Linux distro).
 
 `chmod +x /PATH/TO/FILE.ven`
 

@@ -19,6 +19,7 @@ struct options
 {
     string inFile;
     string outFile;
+    string shebang;
 };
 
 options parseArgs(const int argc, const char *argv[])
@@ -26,12 +27,23 @@ options parseArgs(const int argc, const char *argv[])
     options out;
     out.inFile = "";
     out.outFile = "";
+    out.shebang = "";
 
     for (int i = 1; i < argc; i++)
     {
         string cur(argv[i]);
 
-        if (cur == "-o")
+        if (cur == "-sh")
+        {
+            if (i + 1 >= argc)
+            {
+                throw runtime_error("Error: -sh must be followed by an argument");
+            }
+
+            i++;
+            out.shebang = argv[i];
+        }
+        else if (cur == "-o")
         {
             if (i + 1 >= argc)
             {
@@ -88,11 +100,15 @@ int main(const int argc, const char *argv[])
     }
 
     // Look for .ter suffix on output
-    if (outputFileName.size() < 4 || outputFileName.substr(outputFileName.size() - 4) != ".ven")
+    if (inputFileName.size() < 4 || inputFileName.substr(inputFileName.size() - 4) != ".ven")
     {
-        cout << tags::yellow_bold
-             << "Warning! The proper file suffix for cpusim2 compiled files is .ven\n"
-             << tags::reset;
+        // Ensure it's not a venus-shebang file
+        if (inputFileName.size() < 6 || inputFileName.substr(inputFileName.size() - 6) != ".vensh")
+        {
+            cout << tags::yellow_bold
+                 << "Warning! The proper file suffix for ternary compiled files is .ven\n"
+                 << tags::reset;
+        }
     }
 
     ifstream in(inputFileName);
@@ -166,6 +182,8 @@ int main(const int argc, const char *argv[])
              << tags::reset;
         return 3;
     }
+
+    out << "#!" << opts.shebang << '\n';
 
     out << assembled;
     out.close();

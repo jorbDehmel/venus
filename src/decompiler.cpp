@@ -45,10 +45,10 @@ int main(const int argc, const char *argv[])
     }
 
     string inputFile = argv[1];
-    if (inputFile.size() < 5 || inputFile.substr(inputFile.size() - 5) != ".tera")
+    if (inputFile.size() < 4 || inputFile.substr(inputFile.size() - 4) != ".ven")
     {
         cout << tags::yellow_bold
-             << "Warning! The proper file suffix for ternary compiled files is .tera\n"
+             << "Warning! The proper file suffix for Venus compiled files is .ven\n"
              << tags::reset;
     }
 
@@ -69,7 +69,10 @@ int main(const int argc, const char *argv[])
     while (!in.eof())
     {
         getline(in, line);
-        raw += line + '\n';
+        if (line[0] != '#')
+        {
+            raw += line + '\n';
+        }
     }
     in.close();
 

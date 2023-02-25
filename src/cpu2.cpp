@@ -10,7 +10,7 @@ MIT licence via mit-license.org held by author
 
 cpu2::cpu2()
 {
-    *instrPointer = 2 * MEMSIZE / 3;
+    *instrPointer = 0;
 
     sectors[0] = mem;
     for (int i = 1; i < 27; i++)
@@ -20,12 +20,12 @@ cpu2::cpu2()
     return;
 }
 
-cpu2::cpu2(short *Sectors[26])
+cpu2::cpu2(short *Sectors[31])
 {
-    *instrPointer = 2 * MEMSIZE / 3;
+    *instrPointer = 0;
 
     sectors[0] = mem;
-    for (int i = 1; i < 27; i++)
+    for (int i = 1; i < 31; i++)
     {
         sectors[i] = Sectors[i - 1];
     }
@@ -36,8 +36,9 @@ void cpu2::loadProgram(string &Program)
 {
     for (int i = 0; i < (int)Program.size(); i++)
     {
-        ((char *)(mem + *instrPointer))[i] = Program[i];
+        ((char *)(instructions + *instrPointer))[i] = Program[i];
     }
+
     return;
 }
 
@@ -49,7 +50,7 @@ void cpu2::printInstr(const short &From, const int &HowMany) const
         {
             cout << '\n';
         }
-        cout << mem[From + short(i)] << '\t';
+        cout << instructions[From + short(i)] << '\t';
     }
     cout << '\n';
 
@@ -64,9 +65,9 @@ int cpu2::doInstr()
 
     short *instruc, *addr, *lit;
 
-    instruc = mem + *instrPointer;
-    addr = mem + *instrPointer + 1;
-    lit = mem + *instrPointer + 2;
+    instruc = instructions + *instrPointer;
+    addr = instructions + *instrPointer + 1;
+    lit = instructions + *instrPointer + 2;
 
     char temp;
     switch (*instruc)
@@ -87,27 +88,27 @@ int cpu2::doInstr()
         curSector[*addr] -= *lit;
         break;
     case jump:
-        if (*lit != short(0))
+        if (*lit != 0)
         {
-            *instrPointer += (*lit - short(1)) * short(3);
+            *instrPointer += (*lit - 1) * 3;
         }
         else
         {
-            *instrPointer = *addr - short(3);
+            *instrPointer = *addr - 3;
         }
         break;
     case jumpBack:
-        if (*lit != short(0))
+        if (*lit != 0)
         {
-            *instrPointer -= (*lit + short(1)) * short(3);
+            *instrPointer -= (*lit + 1) * 3;
         }
         else
         {
-            *instrPointer = *addr - short(3);
+            *instrPointer = *addr - 3;
         }
         break;
     case ifControl:
-        if (*controlBuffer == short(0))
+        if (*controlBuffer == 0)
         {
             jumpIf();
         }

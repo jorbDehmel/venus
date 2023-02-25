@@ -94,7 +94,6 @@ int main(const int argc, const char *argv[])
     }
     in.close();
 
-    // Load trytes into memory
     cpu2 c;
     c.loadProgram(code);
 

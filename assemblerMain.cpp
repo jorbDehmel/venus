@@ -183,7 +183,10 @@ int main(const int argc, const char *argv[])
         return 3;
     }
 
-    out << "#!" << opts.shebang << '\n';
+    if (opts.shebang != "")
+    {
+        out << "#!" << opts.shebang << '\n';
+    }
 
     out << assembled;
     out.close();

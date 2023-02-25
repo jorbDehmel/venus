@@ -15,8 +15,19 @@ MIT licence via mit-license.org held by author
 #include <iostream>
 using namespace std;
 
-#define MEMSIZE (int)19'683
-#define INSTRSIZE 19'683
+constexpr int power(int a, int b)
+{
+    int out = 1;
+    for (int i = 0; i < b; i++)
+    {
+        out *= a;
+    }
+
+    return out;
+}
+
+#define MEMSIZE power(2, 16)
+#define INSTRSIZE MEMSIZE
 
 // Note: trytes internally store their data as 16-bit binary integers.
 // Thus, the following enumeration is valid for direct casting to trytes.
@@ -87,6 +98,7 @@ protected:
     istream *inStream = &cin;
 
     short mem[MEMSIZE + INSTRSIZE];
+    short *instructions = mem + MEMSIZE;
     short *sectors[27];
 
     short *curSector = mem;

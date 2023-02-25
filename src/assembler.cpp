@@ -8,8 +8,6 @@ MIT licence via mit-license.org held by author
 
 #include "assembler.hpp"
 
-#define INSTRSTART (MEMSIZE * 2 / 3)
-
 Assembler::Assembler()
 {
     firstOpenAddress = short(27);
@@ -319,7 +317,7 @@ short_assembly Assembler::assemble(const string &What)
             out += encode(ifNever) + encode(short(0)) + encode(short(0));
 
             string name = instr.substr(1);
-            functions[name] = (INSTRSTART + out.size() / 3);
+            functions[name] = (out.size() / 3) - 1;
             prefix = "+" + prefix;
 
             cout << "Started function " << name << '\n';

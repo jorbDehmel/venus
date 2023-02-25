@@ -20,7 +20,7 @@ cpu2::cpu2()
     return;
 }
 
-cpu2::cpu2(short *Sectors[26])
+cpu2::cpu2(short *Sectors[31])
 {
     *instrPointer = 2 * MEMSIZE / 3;
 

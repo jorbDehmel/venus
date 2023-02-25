@@ -23,7 +23,15 @@ MIT licence via mit-license.org held by author
 using namespace std;
 
 typedef string short_assembly;
-typedef pair<short, short> var;
+
+struct var
+{
+    string type;
+    short address;
+    short size;
+};
+
+string handleScope(const string &Prefix, const string &VarName);
 
 class Assembler
 {
@@ -34,6 +42,7 @@ public:
     short_assembly encode(const short &What);
 
     map<string, string (*)(Assembler &Caller, const string &Arg)> macros;
+    map<string, short> types;
 
     set<string> noArgs;
 
@@ -45,6 +54,7 @@ public:
     stack<short> ifPositions;
 
     short firstOpenAddress;
+    string prefix;
 };
 
 #endif

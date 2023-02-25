@@ -1,5 +1,5 @@
-.OUT 1
-.END 1
+.OUT u16
+.END u16
 
 put END -0
 

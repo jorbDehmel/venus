@@ -127,14 +127,14 @@ string copyVars(Assembler &Caller, const string &Arg)
     ARG_2 = Arg.substr(ind + 1);
 
     // Assure safety
-    if (Caller.variables[ARG_1].second != Caller.variables[ARG_2].second)
+    if (Caller.variables[ARG_1].size != Caller.variables[ARG_2].size)
     {
         throw macro_error("Cannot copy: Unequal variable sizes");
     }
 
     string out;
 
-    int size = (int)Caller.variables[ARG_1].second;
+    int size = (int)Caller.variables[ARG_1].size;
     for (int i = 0; i < size; i++)
     {
         out += "cpy ^" + ARG_1 + "." + to_string(i) + " ^" + ARG_2 + "." + to_string(i) + "\n";
@@ -146,8 +146,9 @@ string copyVars(Assembler &Caller, const string &Arg)
 string zeroOut(Assembler &Caller, const string &Arg)
 {
     string out;
+    string name = handleScope(Caller.prefix, Arg);
 
-    if (Caller.variables.count(Arg) == 0)
+    if (Caller.variables.count(name) == 0)
     {
         cout << "Var dump:\n";
         for (auto v : Caller.variables)
@@ -155,13 +156,13 @@ string zeroOut(Assembler &Caller, const string &Arg)
             cout << '\t' << v.first << '\n';
         }
 
-        throw macro_error("Invalid variable '" + Arg + "' could not be zeroed");
+        throw macro_error("Invalid variable '" + name + "' could not be zeroed");
     }
 
-    int size = (int)Caller.variables[Arg].second;
+    int size = (int)Caller.variables[name].size;
     for (int i = 0; i < size; i++)
     {
-        out += "put ^" + Arg + "." + to_string(i) + " 0\n";
+        out += "put ^" + name + "." + to_string(i) + " 0\n";
     }
 
     return out;

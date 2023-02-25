@@ -98,6 +98,8 @@ From then on, you can simply use the following to call the program.
 
 \# - Call a macro (#print yada yada yada)
 
+\` - Variable size/type assertion (\`VAR 2 or \`VAR int or \`VAR $int)
+
 ## Macros
 
 Macros are pre-compilation CPP functions which take arguments

@@ -49,14 +49,14 @@ Assembler::Assembler()
     instructions["ifNever"] = ifNever;
 
     // Buffer address variables (non-stack)
-    variables["INSTR"] = var(0, 1);
-    variables["CONT"] = var(1, 1);
-    variables["RET"] = var(2, 1);
+    variables["INSTR"] = var{"u16", 0, 1};
+    variables["CONT"] = var{"u16", 1, 1};
+    variables["RET"] = var{"u16", 2, 1};
 
     // Convenience variables
-    variables["ENDL"] = var('\n', 1);
-    variables["SPACE"] = var(' ', 1);
-    variables["TAB"] = var('\t', 1);
+    variables["ENDL"] = var{"i8", '\n', 1};
+    variables["SPACE"] = var{"i8", ' ', 1};
+    variables["TAB"] = var{"i8", '\t', 1};
 
     // No argument instructions
     noArgs.insert("kill");
@@ -71,6 +71,8 @@ Assembler::Assembler()
 
     macros["cpy"] = copyVars;
     macros["zero"] = zeroOut;
+
+    types["u16"] = 1;
 
     return;
 }
@@ -131,16 +133,34 @@ short_assembly Assembler::assemble(const string &What)
             stringstream extract;
             extract << line.substr(1);
 
-            int size;
+            string type;
             string name;
-            extract >> name >> size;
+            extract >> name >> type;
 
-            variables[name] = var(short(0), short(size));
+            name = prefix + name;
+
+            try
+            {
+                short sizeShort = stoi(type);
+                variables[name] = var{"NULL_TYPE", 0, sizeShort};
+            }
+            catch (...)
+            {
+                if (types.count(type) != 0)
+                {
+                    variables[name] = var{type, 0, types[type]};
+                }
+                else
+                {
+                    throw runtime_error("Invalid type '" + type + "'");
+                }
+            }
         }
     }
 
     string postMacro = What;
     string instr;
+    prefix = "";
 
     int macroPass = 0;
     do
@@ -178,6 +198,15 @@ short_assembly Assembler::assemble(const string &What)
                     throw runtime_error("Unknown macro '" + instr.substr(1) + "'");
                 }
             }
+
+            else if (line[0] == '{')
+            {
+                prefix = "+" + prefix;
+            }
+            else if (line[0] == '}')
+            {
+                prefix = prefix.substr(1);
+            }
             else
             {
                 postMacro += instr + '\n';
@@ -192,7 +221,7 @@ short_assembly Assembler::assemble(const string &What)
     cout << "Assembling...\n";
 
     string out;
-    string prefix;
+    prefix = "";
 
     while (!code.eof())
     {
@@ -217,7 +246,7 @@ short_assembly Assembler::assemble(const string &What)
         else if (variables.count(handleScope(prefix, instr)) != 0)
         {
             // Variable (current scope)
-            out += encode(variables[handleScope(prefix, instr)].first);
+            out += encode(variables[handleScope(prefix, instr)].address);
         }
         else if (instr[0] == '^')
         {
@@ -249,12 +278,11 @@ short_assembly Assembler::assemble(const string &What)
             {
                 if (by >= 0)
                 {
-                    out += encode(variables[name].first + short(by));
+                    out += encode(variables[name].address + short(by));
                 }
                 else
                 {
-                    // shorts do not natively support negatives
-                    out += encode(variables[name].first - short(-by));
+                    out += encode(variables[name].address - short(-by));
                 }
             }
         }
@@ -266,15 +294,32 @@ short_assembly Assembler::assemble(const string &What)
                 throw runtime_error("No variable '" + name + "' found.");
             }
 
-            out += encode(variables[name].second);
+            out += encode(variables[name].size);
         }
         else if (instr[0] == '.')
         {
             // Variable declaration
-            int size = 0;
-            code >> size;
+            string type;
+            code >> type;
 
-            variables[prefix + instr.substr(1)] = var(firstOpenAddress, short(size));
+            short size;
+            try
+            {
+                size = stoi(type);
+                variables[prefix + instr.substr(1)] = var{"NULL_TYPE", firstOpenAddress, size};
+            }
+            catch (...)
+            {
+                if (types.count(type) != 0)
+                {
+                    size = types[type];
+                    variables[prefix + instr.substr(1)] = var{"NULL_TYPE", firstOpenAddress, size};
+                }
+                else
+                {
+                    throw runtime_error("Invalid type '" + type + "'");
+                }
+            }
 
             memStack.push(firstOpenAddress);
             firstOpenAddress += size;
@@ -282,7 +327,7 @@ short_assembly Assembler::assemble(const string &What)
         else if (instr[0] == '~')
         {
             // Stack pop
-            if (variables.count(prefix + instr.substr(1)) == 0 || memStack.top() != variables[prefix + instr.substr(1)].first)
+            if (variables.count(prefix + instr.substr(1)) == 0 || memStack.top() != variables[prefix + instr.substr(1)].address)
             {
                 throw runtime_error("Cannot pop a variable which is not on the top of the stack");
             }
@@ -386,6 +431,51 @@ short_assembly Assembler::assemble(const string &What)
                 // ~OLD_RET
                 firstOpenAddress = memStack.top();
                 memStack.pop();
+            }
+        }
+        else if (instr[0] == '`')
+        {
+            // Variable type/size assertion
+
+            // `VAR 2 asserts VAR is of size 2 bytes
+            // `VAR int asserts VAR is of type int
+            // `VAR $int asserts VAR is of the same size as an int (pointer castable)
+            // Compilation fails if these conditions are not met
+
+            string type;
+            code >> type;
+
+            string name = handleScope(prefix, instr.substr(1));
+
+            if (type[0] == '$')
+            {
+                if (types.count(type.substr(1)) == 0)
+                {
+                    throw runtime_error("Type '" + type.substr(1) + "' does not exist");
+                }
+                else
+                {
+                    if (types[type.substr(1)] != variables[name].size)
+                    {
+                        throw runtime_error("Variable '" + name +
+                                            "' is required to have a size of " + to_string(types[type.substr(1)]) +
+                                            " but has a size of " + to_string(variables[name].size));
+                    }
+                }
+            }
+            else if (types.count(type) == 0)
+            {
+                throw runtime_error("Type '" + type + "' does not exist");
+            }
+            else if (variables.count(name) == 0)
+            {
+                throw runtime_error("Variable '" + name + "' does not exist");
+            }
+            else if (variables[name].type != type)
+            {
+                throw runtime_error("Variable '" + name +
+                                    "' is required to be of type '" + type +
+                                    "' but is of type '" + variables[name].type + "'");
             }
         }
         else if (instr[0] == '/')

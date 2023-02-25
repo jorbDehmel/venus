@@ -1,4 +1,10 @@
+.PAR u16
+put PAR 5432
+
 {main
+    /`*PAR u16
+    out *PAR $*PAR
+
     #println First variable:
 
     .VAR 9
@@ -24,4 +30,6 @@
 }
 
 !main
+
+~PAR
 kill

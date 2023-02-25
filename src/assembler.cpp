@@ -10,7 +10,7 @@ MIT licence via mit-license.org held by author
 
 Assembler::Assembler()
 {
-    firstOpenAddress = short(27);
+    firstOpenAddress = 32;
 
     // Build instruction table
     instructions["kill"] = kill;
@@ -212,7 +212,6 @@ short_assembly Assembler::assemble(const string &What)
         else if (functions.count(instr) != 0)
         {
             // Function
-            cout << "Function " << instr << " maps to address " << functions[instr] << '\n';
             out += encode(functions[instr]);
         }
         else if (variables.count(handleScope(prefix, instr)) != 0)
@@ -314,13 +313,13 @@ short_assembly Assembler::assemble(const string &What)
         else if (instr[0] == '{')
         {
             // Call CPU's integrated function jumper
-            out += encode(ifNever) + encode(short(0)) + encode(short(0));
+            out += encode(ifNever) + encode(0) + encode(0);
 
             string name = instr.substr(1);
-            functions[name] = (out.size() / 3) - 1;
+            functions[name] = (out.size()) / 2;
             prefix = "+" + prefix;
 
-            cout << "Started function " << name << '\n';
+            cout << "Started function " << name << " at " << functions[name] << '\n';
         }
         else if (instr[0] == '}')
         {
@@ -365,7 +364,7 @@ short_assembly Assembler::assemble(const string &What)
                 vector<short> toInsert = {
                     cpy, RET, oldRet,
                     cpy, INSTR, RET,
-                    incr, RET, short(6)};
+                    incr, RET, 6};
                 for (auto t : toInsert)
                 {
                     out += encode(t);

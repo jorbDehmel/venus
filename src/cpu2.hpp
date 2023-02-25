@@ -99,7 +99,7 @@ protected:
 
     short mem[MEMSIZE + INSTRSIZE];
     short *instructions = mem + MEMSIZE;
-    short *sectors[27];
+    short *sectors[32];
 
     short *curSector = mem;
     short *instrPointer = mem;

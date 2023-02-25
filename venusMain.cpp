@@ -6,6 +6,8 @@ github.com/jorbDehmel
 MIT licence via mit-license.org held by author
 */
 
+#define TIMER
+
 #include <iostream>
 #include <fstream>
 #include <chrono>
@@ -99,7 +101,7 @@ int main(const int argc, const char *argv[])
 
 #ifdef TIMER
     auto begin = chrono::high_resolution_clock::now();
-    while (c.doInstr() == 0)
+    while (c.doInstr() != -1)
     {
         // This comment to make this loop less ugly
     }
@@ -107,7 +109,7 @@ int main(const int argc, const char *argv[])
     long int ellapsed = chrono::duration_cast<chrono::nanoseconds>(end - begin).count();
     cout << "Nanoseconds: " << ellapsed << '\n';
 #else
-    while (c.doInstr() == 0)
+    while (c.doInstr() != -1)
     {
         // This comment to make this loop less ugly
     }

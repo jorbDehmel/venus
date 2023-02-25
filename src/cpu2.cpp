@@ -13,7 +13,7 @@ cpu2::cpu2()
     *instrPointer = 0;
 
     sectors[0] = mem;
-    for (int i = 1; i < 27; i++)
+    for (int i = 1; i < 32; i++)
     {
         sectors[i] = nullptr;
     }
@@ -25,7 +25,7 @@ cpu2::cpu2(short *Sectors[31])
     *instrPointer = 0;
 
     sectors[0] = mem;
-    for (int i = 1; i < 31; i++)
+    for (int i = 1; i < 32; i++)
     {
         sectors[i] = Sectors[i - 1];
     }
@@ -50,7 +50,7 @@ void cpu2::printInstr(const short &From, const int &HowMany) const
         {
             cout << '\n';
         }
-        cout << instructions[From + short(i)] << '\t';
+        cout << instructions[From + i] << '\t';
     }
     cout << '\n';
 
@@ -59,10 +59,6 @@ void cpu2::printInstr(const short &From, const int &HowMany) const
 
 int cpu2::doInstr()
 {
-#ifdef TIMER
-    auto start = chrono::high_resolution_clock::now();
-#endif
-
     short *instruc, *addr, *lit;
 
     instruc = instructions + *instrPointer;
@@ -116,106 +112,106 @@ int cpu2::doInstr()
     case endif:
         break;
     case andEqV:
-        if (*controlBuffer != short(0))
+        if (*controlBuffer != 0)
         {
             if (curSector[*addr] == curSector[*lit])
             {
-                *controlBuffer = short(19'682);
+                *controlBuffer = 128;
             }
             else
             {
-                *controlBuffer = short(0);
+                *controlBuffer = 0;
             }
         }
         break;
     case andNeqV:
-        if (*controlBuffer != short(0))
+        if (*controlBuffer != 0)
         {
             if (curSector[*addr] != curSector[*lit])
             {
-                *controlBuffer = short(19'682);
+                *controlBuffer = 128;
             }
             else
             {
-                *controlBuffer = short(0);
+                *controlBuffer = 0;
             }
         }
         break;
     case andLessV:
-        if (*controlBuffer != short(0))
+        if (*controlBuffer != 0)
         {
             if (curSector[*addr] < curSector[*lit])
             {
-                *controlBuffer = short(19'682);
+                *controlBuffer = 128;
             }
             else
             {
-                *controlBuffer = short(0);
+                *controlBuffer = 0;
             }
         }
         break;
     case andGreaterV:
-        if (*controlBuffer != short(0))
+        if (*controlBuffer != 0)
         {
             if (curSector[*addr] > curSector[*lit])
             {
-                *controlBuffer = short(19'682);
+                *controlBuffer = 128;
             }
             else
             {
-                *controlBuffer = short(0);
+                *controlBuffer = 0;
             }
         }
         break;
     case orEqV:
-        if (*controlBuffer == short(0))
+        if (*controlBuffer == 0)
         {
             if (curSector[*addr] == curSector[*lit])
             {
-                *controlBuffer = short(19'682);
+                *controlBuffer = 128;
             }
             else
             {
-                *controlBuffer = short(0);
+                *controlBuffer = 0;
             }
         }
         break;
     case orNeqV:
-        if (*controlBuffer == short(0))
+        if (*controlBuffer == 0)
         {
             if (curSector[*addr] != curSector[*lit])
             {
-                *controlBuffer = short(19'682);
+                *controlBuffer = 128;
             }
             else
             {
-                *controlBuffer = short(0);
+                *controlBuffer = 0;
             }
         }
         break;
     case orLessV:
-        if (*controlBuffer == short(0))
+        if (*controlBuffer == 0)
         {
             if (curSector[*addr] < curSector[*lit])
             {
-                *controlBuffer = short(19'682);
+                *controlBuffer = 128;
             }
             else
             {
-                *controlBuffer = short(0);
+                *controlBuffer = 0;
             }
         }
         break;
     case orGreaterV:
-        if (*controlBuffer == short(0))
+        if (*controlBuffer == 0)
         {
             if (curSector[*addr] > curSector[*lit])
             {
-                *controlBuffer = short(19'682);
+                *controlBuffer = 128;
             }
             else
             {
-                *controlBuffer = short(0);
+                *controlBuffer = 0;
             }
         }
         break;
@@ -241,13 +237,13 @@ int cpu2::doInstr()
 
         break;
     case sector:
-        if (*addr != short(0))
+        if (*addr != 0)
         {
-            if (sectors[*addr % short(27)] == nullptr)
+            if (sectors[*addr % 32] == nullptr)
             {
                 throw runtime_error("Cannot access invalid memory sector");
             }
-            curSector = sectors[*addr % short(27)];
+            curSector = sectors[*addr % 32];
         }
         else
         {
@@ -279,39 +275,24 @@ int cpu2::doInstr()
         break;
     }
 
-    *instrPointer += short(3);
+    *instrPointer += 3;
 
-#ifdef TIMER
-    auto end = chrono::high_resolution_clock::now();
-    int ellapsed = chrono::duration_cast<chrono::nanoseconds>(end - start).count();
-
-    if (instrTimes.count(*instruc) == 0)
-    {
-        instrTimes[*instruc] = pair<double, int>(ellapsed, 1);
-    }
-    else
-    {
-        instrTimes[*instruc].first += ellapsed;
-        instrTimes[*instruc].second += 1;
-    }
-#endif
-
-    return 0;
+    return *instruc;
 }
 
 void cpu2::jumpIf()
 {
-    short numIfs(1);
+    short numIfs = 1;
 
-    while (numIfs != short(0))
+    while (numIfs != 0)
     {
-        *instrPointer += short(3);
+        *instrPointer += 3;
 
-        if (mem[*instrPointer] == ifControl)
+        if (instructions[*instrPointer] == ifControl || instructions[*instrPointer] == ifNever)
         {
             numIfs++;
         }
-        else if (mem[*instrPointer] == endif)
+        else if (instructions[*instrPointer] == endif)
         {
             numIfs--;
         }

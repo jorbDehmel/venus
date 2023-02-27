@@ -117,45 +117,6 @@ string handleScope(const string &Prefix, const string &VarName)
     }
 }
 
-unsigned short Assembler::resolveVariable(const string &Prefix, const string &VarName)
-{
-    string name = handleScope(Prefix, VarName) + '.';
-
-    unsigned short currentAddress = 0;
-    string symb;
-
-    for (int index = 0; index < name.size(); index++)
-    {
-        if (name[index] == '.')
-        {
-            try
-            {
-                // int literal
-                int moveBy = stoi(symb);
-                currentAddress += moveBy;
-            }
-            catch (...)
-            {
-                // variable
-                if (variables.count(name.substr(0, index + 1)) != 0)
-                {
-                    currentAddress = variables[name.substr(0, index + 1)].address;
-                }
-                else
-                {
-                    throw runtime_error("");
-                }
-            }
-        }
-        else
-        {
-            symb += name[index];
-        }
-    }
-
-    return currentAddress;
-}
-
 short_assembly Assembler::assemble(const string &What)
 {
     cout << "Premacro pass...\n";
@@ -207,7 +168,6 @@ short_assembly Assembler::assemble(const string &What)
     int macroPass = 0;
     do
     {
-        // Load variables for generalized passes
         stringstream preMacro;
         preMacro << postMacro;
         postMacro = "";

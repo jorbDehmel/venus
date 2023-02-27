@@ -41,7 +41,6 @@ public:
 
     short_assembly assemble(const string &What);
     short_assembly encode(const short &What);
-    unsigned short resolveVariable(const string &Prefix, const string &VarName);
 
     map<string, string (*)(Assembler &Caller, const string &Arg)> macros;
     map<string, short> types;

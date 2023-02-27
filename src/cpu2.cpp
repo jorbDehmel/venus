@@ -218,20 +218,13 @@ int cpu2::doInstr()
     case out:
         for (int i = 0; i < *lit; i++)
         {
-            if (curSector[*addr + i] < 256)
-            {
-                cout << (char)curSector[*addr + i];
-            }
-            else
-            {
-                cout << curSector[*addr + i] << '\n';
-            }
+            *outStream << curSector[*addr + i] << '\n';
         }
         break;
     case inp:
         for (short i = 0; i < *lit; i++)
         {
-            cin >> temp;
+            *inStream >> temp;
             curSector[*addr + i] = temp;
         }
 
@@ -268,9 +261,16 @@ int cpu2::doInstr()
     case ifNever:
         jumpIf();
         break;
+    case outChar:
+        for (int i = 0; i < *lit; i++)
+        {
+            *outStream << ((char *)(curSector + *addr + i))[0]
+                       << ((char *)(curSector + *addr + i))[1];
+        }
+        break;
 
     default:
-        cout << "Error during processing of instruction " << *instruc << '\n';
+        *outStream << "Error during processing of instruction " << *instruc << '\n';
         throw runtime_error("Could not process invalid command");
         break;
     }

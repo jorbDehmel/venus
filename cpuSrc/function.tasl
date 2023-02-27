@@ -1,8 +1,4 @@
-.PAR u16
-put PAR 5432
-
-{main
-    /`*PAR u16
+{main `*PAR u16
     out *PAR $*PAR
 
     #println First variable:
@@ -28,6 +24,10 @@ put PAR 5432
 
     !return
 }
+
+.PAR u16
+put PAR 5432
+out PAR $PAR
 
 !main
 

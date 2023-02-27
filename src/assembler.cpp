@@ -8,6 +8,8 @@ MIT licence via mit-license.org held by author
 
 #include "assembler.hpp"
 
+bool safety = true;
+
 Assembler::Assembler()
 {
     firstOpenAddress = 32;
@@ -47,6 +49,7 @@ Assembler::Assembler()
 
     instructions["modV"] = modV;
     instructions["ifNever"] = ifNever;
+    instructions["outChar"] = outChar;
 
     // Buffer address variables (non-stack)
     variables["INSTR"] = var{"u16", 0, 1};
@@ -112,6 +115,45 @@ string handleScope(const string &Prefix, const string &VarName)
     {
         return Prefix + VarName;
     }
+}
+
+unsigned short Assembler::resolveVariable(const string &Prefix, const string &VarName)
+{
+    string name = handleScope(Prefix, VarName) + '.';
+
+    unsigned short currentAddress = 0;
+    string symb;
+
+    for (int index = 0; index < name.size(); index++)
+    {
+        if (name[index] == '.')
+        {
+            try
+            {
+                // int literal
+                int moveBy = stoi(symb);
+                currentAddress += moveBy;
+            }
+            catch (...)
+            {
+                // variable
+                if (variables.count(name.substr(0, index + 1)) != 0)
+                {
+                    currentAddress = variables[name.substr(0, index + 1)].address;
+                }
+                else
+                {
+                    throw runtime_error("");
+                }
+            }
+        }
+        else
+        {
+            symb += name[index];
+        }
+    }
+
+    return currentAddress;
 }
 
 short_assembly Assembler::assemble(const string &What)
@@ -313,7 +355,7 @@ short_assembly Assembler::assemble(const string &What)
                 if (types.count(type) != 0)
                 {
                     size = types[type];
-                    variables[prefix + instr.substr(1)] = var{"NULL_TYPE", firstOpenAddress, size};
+                    variables[prefix + instr.substr(1)] = var{type, firstOpenAddress, size};
                 }
                 else
                 {
@@ -368,6 +410,7 @@ short_assembly Assembler::assemble(const string &What)
         }
         else if (instr[0] == '}')
         {
+            // End scope
             if (prefix == "")
             {
                 throw runtime_error("Error: Cannot end global scope");
@@ -382,6 +425,7 @@ short_assembly Assembler::assemble(const string &What)
         }
         else if (instr[0] == '!')
         {
+            // Call function
             string name = instr.substr(1);
             if (name == "return")
             {
@@ -477,6 +521,20 @@ short_assembly Assembler::assemble(const string &What)
                                     "' is required to be of type '" + type +
                                     "' but is of type '" + variables[name].type + "'");
             }
+        }
+        else if (instr[0] == '[')
+        {
+            // Struct definition
+            // [foobar
+            //      .a u16
+            //      .b i32
+            //      .c 16
+            // ]
+            // .VAR foobar
+            // `VAR 19
+        }
+        else if (instr[0] == ']')
+        {
         }
         else if (instr[0] == '/')
         {

@@ -23,6 +23,7 @@ MIT licence via mit-license.org held by author
 using namespace std;
 
 typedef string short_assembly;
+extern bool safety;
 
 struct var
 {
@@ -40,6 +41,7 @@ public:
 
     short_assembly assemble(const string &What);
     short_assembly encode(const short &What);
+    unsigned short resolveVariable(const string &Prefix, const string &VarName);
 
     map<string, string (*)(Assembler &Caller, const string &Arg)> macros;
     map<string, short> types;
@@ -52,6 +54,7 @@ public:
 
     stack<short> memStack;
     stack<short> ifPositions;
+    map<string, vector<var>> structs;
 
     short firstOpenAddress;
     string prefix;

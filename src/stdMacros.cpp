@@ -18,7 +18,6 @@ string print(Assembler &Caller, const string &Arg)
     // Allocate appropriately sized variable
     out += ".__PRINT_TEMP " + to_string(size) + "\n";
 
-    // Write to variable tryte by tryte
     for (int i = 0; i < size; i++)
     {
         out += "put ^__PRINT_TEMP." + to_string(i) + " ";
@@ -38,7 +37,7 @@ string print(Assembler &Caller, const string &Arg)
     }
 
     // Out by the size of the variable
-    out += "out __PRINT_TEMP " + to_string(size) + "\n";
+    out += "outChar __PRINT_TEMP " + to_string(size) + "\n";
 
     // Destruct the variable
     out += "~__PRINT_TEMP\n";
@@ -77,7 +76,7 @@ string println(Assembler &Caller, const string &Arg)
     out += "put ^__PRINT_TEMP." + to_string(size - 1) + " *ENDL\n";
 
     // Out by the size of the variable
-    out += "out __PRINT_TEMP " + to_string(size) + "\n";
+    out += "outChar __PRINT_TEMP " + to_string(size) + "\n";
 
     // Destruct the variable
     out += "~__PRINT_TEMP\n";

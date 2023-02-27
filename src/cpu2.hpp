@@ -59,6 +59,7 @@ enum instr
     divV,
     modV,
     ifNever,
+    outChar,
 };
 
 enum buffers

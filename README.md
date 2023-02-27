@@ -88,7 +88,7 @@ From then on, you can simply use the following to call the program.
 
 \{ - Begin function ({FNNAME ...)
 
-\} - End function and return (... })
+\} - End function (... })
 
 \! - Update call stack and call function (!FNNAME)
 
@@ -99,6 +99,10 @@ From then on, you can simply use the following to call the program.
 \# - Call a macro (#print yada yada yada)
 
 \` - Variable size/type assertion (\`VAR 2 or \`VAR int or \`VAR $int)
+
+\[ - Struct definition ([CLASSNAME ...)
+
+\] - End struct definition (... ])
 
 ## Macros
 

@@ -39,6 +39,8 @@ class Assembler
 public:
     Assembler();
 
+    set<string> options;
+
     short_assembly assemble(const string &What);
     short_assembly encode(const short &What);
 
@@ -53,7 +55,7 @@ public:
 
     stack<short> memStack;
     stack<short> ifPositions;
-    map<string, vector<var>> structs;
+    map<string, vector<pair<string, var>>> structs;
 
     short firstOpenAddress;
     string prefix;

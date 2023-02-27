@@ -20,6 +20,7 @@ struct options
     string inFile;
     string outFile;
     string shebang;
+    bool debug;
 };
 
 options parseArgs(const int argc, const char *argv[])
@@ -28,6 +29,7 @@ options parseArgs(const int argc, const char *argv[])
     out.inFile = "";
     out.outFile = "";
     out.shebang = "";
+    out.debug = false;
 
     for (int i = 1; i < argc; i++)
     {
@@ -52,6 +54,10 @@ options parseArgs(const int argc, const char *argv[])
 
             out.outFile = argv[i + 1];
             i++;
+        }
+        else if (cur == "-d")
+        {
+            out.debug = true;
         }
         else if (cur[0] != '-')
         {
@@ -140,6 +146,10 @@ int main(const int argc, const char *argv[])
     try
     {
         Assembler a;
+        if (opts.debug)
+        {
+            a.options.insert("dump_vars");
+        }
         assembled = a.assemble(toAssemble);
     }
     catch (macro_error &e)

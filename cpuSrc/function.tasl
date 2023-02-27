@@ -1,3 +1,5 @@
+.PAR u16
+
 {main
     `*PAR u16
     out *PAR $*PAR
@@ -26,7 +28,6 @@
     !return
 }
 
-.PAR u16
 put PAR 5432
 
 !main

@@ -1,0 +1,13 @@
+[foobar
+    a u16
+    b 8
+    c u16
+    d 16
+]
+
+.VAR foobar
+
+put VAR.a 123
+out VAR.a $VAR.a
+
+kill

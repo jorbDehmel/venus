@@ -152,11 +152,112 @@ short_assembly Assembler::assemble(const string &What)
                 if (types.count(type) != 0)
                 {
                     variables[name] = var{type, 0, types[type]};
+
+                    if (structs.count(type) != 0)
+                    {
+                        for (auto member : structs[type])
+                        {
+                            variables[prefix + name.substr(1) + "." + member.first] =
+                                var{member.second.type, (short)(member.second.address + firstOpenAddress), member.second.size};
+                        }
+                    }
                 }
                 else
                 {
                     throw runtime_error("Invalid type '" + type + "'");
                 }
+            }
+        }
+        else if (line[0] == '[')
+        {
+            // Struct definition
+
+            // [foobar
+            //      .a u16
+            //      .b i32
+            //      .c 16
+            // ]
+
+            // .VAR foobar
+            // `VAR 19
+
+            string structName = line.substr(1);
+
+            structs[structName] = vector<pair<string, var>>();
+            short runningSize = 0;
+
+            string name, type;
+
+            // Get entries and their types
+            do
+            {
+                temp >> name;
+                if (name[0] == ']')
+                {
+                    break;
+                }
+
+                temp >> type;
+
+                short size;
+                var varToAdd{"", 0, 0};
+                try
+                {
+                    size = stoi(type);
+                    varToAdd.address = runningSize;
+                    varToAdd.size = size;
+                    varToAdd.type = "NULL_TYPE";
+
+                    runningSize += size;
+                }
+                catch (...)
+                {
+                    if (types.count(type) != 0)
+                    {
+                        size = types[type];
+                        varToAdd.address = runningSize;
+                        varToAdd.size = size;
+                        varToAdd.type = type;
+
+                        runningSize += size;
+                    }
+                    else
+                    {
+                        throw runtime_error("Invalid type '" + type + "'");
+                    }
+                }
+
+                structs[structName].push_back(pair<string, var>(name, varToAdd));
+            } while (name[0] != ']');
+
+            types[structName] = runningSize;
+        }
+        else if (line[0] == ']')
+        {
+            // Struct ending
+            throw runtime_error("Unmatched struct definition end bracket (']')");
+        }
+    }
+
+    if (options.count("dump_vars") != 0)
+    {
+        cout << "Variable dump:\n";
+        for (auto v : variables)
+        {
+            cout << "Name: " << v.first << " Size:" << v.second.size << " Address: " << v.second.address << " Type: " << v.second.type << '\n';
+        }
+
+        cout << "Struct definition dump:\n";
+        for (auto s : structs)
+        {
+            cout << "Name: " << s.first << '\n';
+
+            for (auto member : s.second)
+            {
+                cout << "\tMember name: " << member.first << '\n'
+                     << "\tSize: " << member.second.size << '\n'
+                     << "\tAddress: " << member.second.address << '\n'
+                     << "\tType: " << member.second.type << "\n\n";
             }
         }
     }
@@ -177,6 +278,7 @@ short_assembly Assembler::assemble(const string &What)
         while (!preMacro.eof())
         {
             getline(preMacro, instr);
+
             while (instr[0] == ' ' || instr[0] == '\t')
             {
                 instr = instr.substr(1);
@@ -316,6 +418,15 @@ short_assembly Assembler::assemble(const string &What)
                 {
                     size = types[type];
                     variables[prefix + instr.substr(1)] = var{type, firstOpenAddress, size};
+
+                    if (structs.count(type) != 0)
+                    {
+                        for (auto member : structs[type])
+                        {
+                            variables[prefix + instr.substr(1) + "." + member.first] =
+                                var{member.second.type, (short)(member.second.address + firstOpenAddress), member.second.size};
+                        }
+                    }
                 }
                 else
                 {
@@ -484,17 +595,11 @@ short_assembly Assembler::assemble(const string &What)
         }
         else if (instr[0] == '[')
         {
-            // Struct definition
-            // [foobar
-            //      .a u16
-            //      .b i32
-            //      .c 16
-            // ]
-            // .VAR foobar
-            // `VAR 19
-        }
-        else if (instr[0] == ']')
-        {
+            string symb;
+            do
+            {
+                code >> symb;
+            } while (symb[0] != ']');
         }
         else if (instr[0] == '/')
         {

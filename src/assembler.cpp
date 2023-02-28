@@ -75,7 +75,14 @@ Assembler::Assembler()
     macros["cpy"] = copyVars;
     macros["zero"] = zeroOut;
 
+    // Include standard types
     types["u16"] = 1;
+    types["u32"] = 2;
+    types["u64"] = 4;
+    types["u128"] = 8;
+
+    types["f32"] = 2;
+    types["f64"] = 4;
 
     return;
 }
@@ -117,18 +124,25 @@ string handleScope(const string &Prefix, const string &VarName)
     }
 }
 
-short_assembly Assembler::assemble(const string &What)
+string Assembler::variablePass(const string &Source)
 {
-    cout << "Premacro pass...\n";
-    stringstream temp;
-    temp << What;
+    cout << "Variable pass...\n";
+    stringstream prePass, postPass;
+    prePass << Source;
+
+    string ignoreLines = "[/=";
 
     string line;
-    while (getline(temp, line))
+    while (getline(prePass, line))
     {
         while (line[0] == ' ' || line[0] == '\t')
         {
             line = line.substr(1);
+        }
+
+        if (ignoreLines.find(line[0]) == string::npos)
+        {
+            postPass << line << '\n';
         }
 
         if (line[0] == '.')
@@ -144,7 +158,7 @@ short_assembly Assembler::assemble(const string &What)
 
             try
             {
-                short sizeShort = stoi(type);
+                unsigned short sizeShort = stoi(type);
                 variables[name] = var{"NULL_TYPE", 0, sizeShort};
             }
             catch (...)
@@ -157,8 +171,8 @@ short_assembly Assembler::assemble(const string &What)
                     {
                         for (auto member : structs[type])
                         {
-                            variables[prefix + name.substr(1) + "." + member.first] =
-                                var{member.second.type, (short)(member.second.address + firstOpenAddress), member.second.size};
+                            variables[prefix + name + "." + member.first] =
+                                var{member.second.type, (unsigned short)(member.second.address + firstOpenAddress), member.second.size};
                         }
                     }
                 }
@@ -167,6 +181,25 @@ short_assembly Assembler::assemble(const string &What)
                     throw runtime_error("Invalid type '" + type + "'");
                 }
             }
+        }
+        else if (line[0] == '=')
+        {
+            // Alias
+            string from, to;
+            int index = 1;
+            while (line[index] != ' ')
+            {
+                from += line[index];
+                index++;
+            }
+            to = line.substr(index + 1);
+
+            if (variables.count(to) == 0)
+            {
+                throw runtime_error("Cannot alias to a non-existant variable '" + to + "'");
+            }
+
+            variables[from] = var{variables[to].type, variables[to].address, variables[to].size};
         }
         else if (line[0] == '[')
         {
@@ -191,13 +224,13 @@ short_assembly Assembler::assemble(const string &What)
             // Get entries and their types
             do
             {
-                temp >> name;
+                prePass >> name;
                 if (name[0] == ']')
                 {
                     break;
                 }
 
-                temp >> type;
+                prePass >> type;
 
                 short size;
                 var varToAdd{"", 0, 0};
@@ -262,6 +295,12 @@ short_assembly Assembler::assemble(const string &What)
         }
     }
 
+    return postPass.str();
+}
+
+short_assembly Assembler::assemble(const string &sourceIn)
+{
+    string What = variablePass(sourceIn);
     string postMacro = What;
     string instr;
     prefix = "";
@@ -279,11 +318,6 @@ short_assembly Assembler::assemble(const string &What)
         {
             getline(preMacro, instr);
 
-            while (instr[0] == ' ' || instr[0] == '\t')
-            {
-                instr = instr.substr(1);
-            }
-
             if (instr[0] == '#')
             {
                 string name;
@@ -295,7 +329,7 @@ short_assembly Assembler::assemble(const string &What)
                 if (macros.count(name) != 0)
                 {
                     string arg = instr.substr(name.size() + 2);
-                    postMacro += macros[name](*this, arg) + '\t';
+                    postMacro += macros[name](*this, arg);
                 }
                 else
                 {
@@ -303,13 +337,15 @@ short_assembly Assembler::assemble(const string &What)
                 }
             }
 
-            else if (line[0] == '{')
+            else if (instr[0] == '{')
             {
                 prefix = "+" + prefix;
+                postMacro += instr + '\n';
             }
-            else if (line[0] == '}')
+            else if (instr[0] == '}')
             {
                 prefix = prefix.substr(1);
+                postMacro += instr + '\n';
             }
             else
             {
@@ -406,7 +442,7 @@ short_assembly Assembler::assemble(const string &What)
             string type;
             code >> type;
 
-            short size;
+            unsigned short size;
             try
             {
                 size = stoi(type);
@@ -424,7 +460,7 @@ short_assembly Assembler::assemble(const string &What)
                         for (auto member : structs[type])
                         {
                             variables[prefix + instr.substr(1) + "." + member.first] =
-                                var{member.second.type, (short)(member.second.address + firstOpenAddress), member.second.size};
+                                var{member.second.type, (unsigned short)(member.second.address + firstOpenAddress), member.second.size};
                         }
                     }
                 }
@@ -432,6 +468,11 @@ short_assembly Assembler::assemble(const string &What)
                 {
                     throw runtime_error("Invalid type '" + type + "'");
                 }
+            }
+
+            if ((int)firstOpenAddress + size > MEMSIZE)
+            {
+                throw runtime_error("Creation of variable '" + instr.substr(1) + "' would exceed memory limit");
             }
 
             memStack.push(firstOpenAddress);
@@ -445,7 +486,28 @@ short_assembly Assembler::assemble(const string &What)
                 throw runtime_error("Cannot pop a variable which is not on the top of the stack");
             }
 
+            short addressToRemove = variables[prefix + instr.substr(1)].address;
             variables.erase(prefix + instr.substr(1));
+
+            set<string> toRemove;
+            for (auto v : variables)
+            {
+                // Remove any aliases
+                if (v.second.address == addressToRemove)
+                {
+                    toRemove.insert(v.first);
+                }
+                // Remove any struct member aliases
+                else if (v.first.substr(0, (prefix.size() + instr.size() - 1)) == prefix + instr.substr(1))
+                {
+                    toRemove.insert(v.first);
+                }
+            }
+            for (auto r : toRemove)
+            {
+                variables.erase(r);
+            }
+
             firstOpenAddress = memStack.top();
             memStack.pop();
         }

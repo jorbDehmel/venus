@@ -20,7 +20,7 @@ cpu2::cpu2()
     return;
 }
 
-cpu2::cpu2(short *Sectors[31])
+cpu2::cpu2(unsigned short *Sectors[31])
 {
     *instrPointer = 0;
 
@@ -42,7 +42,7 @@ void cpu2::loadProgram(string &Program)
     return;
 }
 
-void cpu2::printInstr(const short &From, const int &HowMany) const
+void cpu2::printInstr(const unsigned short &From, const unsigned short &HowMany) const
 {
     for (int i = 0; i < HowMany; i++)
     {
@@ -59,7 +59,7 @@ void cpu2::printInstr(const short &From, const int &HowMany) const
 
 int cpu2::doInstr()
 {
-    short *instruc, *addr, *lit;
+    unsigned short *instruc, *addr, *lit;
 
     instruc = instructions + *instrPointer;
     addr = instructions + *instrPointer + 1;

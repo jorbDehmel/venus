@@ -73,12 +73,12 @@ class cpu2
 {
 public:
     cpu2();
-    cpu2(short *Sectors[31]);
+    cpu2(unsigned short *Sectors[31]);
 
     void loadProgram(string &Program);
     int doInstr();
 
-    void printInstr(const short &From, const int &HowMany) const;
+    void printInstr(const unsigned short &From, const unsigned short &HowMany) const;
 
     void useStream(ostream &Stream)
     {
@@ -98,14 +98,14 @@ protected:
     ostream *outStream = &cout;
     istream *inStream = &cin;
 
-    short mem[MEMSIZE + INSTRSIZE];
-    short *instructions = mem + MEMSIZE;
-    short *sectors[32];
+    unsigned short mem[MEMSIZE + INSTRSIZE];
+    unsigned short *instructions = mem + MEMSIZE;
+    unsigned short *sectors[32];
 
-    short *curSector = mem;
-    short *instrPointer = mem;
-    short *controlBuffer = mem + 1;
-    short *sectorBuffer = mem + 2;
+    unsigned short *curSector = mem;
+    unsigned short *instrPointer = mem;
+    unsigned short *controlBuffer = mem + 1;
+    unsigned short *sectorBuffer = mem + 2;
 };
 
 #endif

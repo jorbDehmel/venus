@@ -8,6 +8,11 @@
 .VAR foobar
 
 put VAR.a 123
+
+=COPY.a VAR.a
+out COPY.a $COPY.a
 out VAR.a $VAR.a
+
+~VAR
 
 kill

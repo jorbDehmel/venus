@@ -514,16 +514,7 @@ short_assembly Assembler::assemble(const string &sourceIn)
         else if (instr[0] == '_')
         {
             // Hex literal
-            string hexIndices = "0123456789abcdef";
-            for (auto t : instr.substr(1))
-            {
-                if (hexIndices.find(t) == string::npos)
-                {
-                    throw runtime_error("Invalid hexadecimal character");
-                }
-
-                out += encode(hexIndices.find(t));
-            }
+            out += encode(stoi(instr.substr(1), 0, 16));
         }
         else if (instr[0] == '-')
         {

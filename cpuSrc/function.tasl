@@ -28,7 +28,7 @@
     !return
 }
 
-put PAR 5432
+put PAR _ffff
 
 !main
 

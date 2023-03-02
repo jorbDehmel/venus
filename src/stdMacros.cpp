@@ -166,3 +166,56 @@ string zeroOut(Assembler &Caller, const string &Arg)
 
     return out;
 }
+
+string call(Assembler &Caller, const string &Arg)
+{
+    string out;
+
+    vector<string> args;
+    string current;
+    for (char c : Arg)
+    {
+        if (c == ' ')
+        {
+            args.push_back(current);
+            current = "";
+        }
+        else
+        {
+            current += c;
+        }
+    }
+    args.push_back(current);
+
+    if (args[0] == "")
+    {
+        throw macro_error("Invalid #call. Must provide at least a function name");
+    }
+
+    // Parse aliases
+    for (int argIndex = 1; argIndex < args.size(); argIndex++)
+    {
+        string from, to;
+        string arg = args[argIndex];
+
+        for (int i = 0; i < arg.size(); i++)
+        {
+            if (arg[i] == '=')
+            {
+                to = arg.substr(i + 1);
+                break;
+            }
+            else
+            {
+                from += arg[i];
+            }
+        }
+
+        // Alias from to
+        out += "=" + from + " " + to + '\n';
+    }
+
+    out += "!" + args[0] + '\n';
+
+    return out;
+}

@@ -71,9 +71,9 @@ Assembler::Assembler()
     macros["print"] = print;
     macros["println"] = println;
     macros["req"] = req;
-
     macros["cpy"] = copyVars;
     macros["zero"] = zeroOut;
+    macros["call"] = call;
 
     // Include standard types
     types["u16"] = 1;
@@ -300,8 +300,7 @@ string Assembler::variablePass(const string &Source)
 
 short_assembly Assembler::assemble(const string &sourceIn)
 {
-    string What = variablePass(sourceIn);
-    string postMacro = What;
+    string postMacro = variablePass(sourceIn);
     string instr;
     prefix = "";
 
@@ -352,6 +351,8 @@ short_assembly Assembler::assemble(const string &sourceIn)
                 postMacro += instr + '\n';
             }
         }
+
+        postMacro = variablePass(postMacro);
     } while (postMacro.find('#') != string::npos);
 
     // Compilation pass

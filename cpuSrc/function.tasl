@@ -30,7 +30,7 @@
 
 put PAR _ffff
 
-!main
+#call main arg=PAR
 
 ~PAR
 kill

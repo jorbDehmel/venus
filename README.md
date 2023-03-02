@@ -106,6 +106,8 @@ From then on, you can simply use the following to call the program.
 
 \= - Alias (=WHAT TO)
 
+\@ - Dealias (\@WHAT)
+
 ## Macros
 
 Macros are pre-compilation CPP functions which take arguments

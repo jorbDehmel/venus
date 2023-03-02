@@ -481,7 +481,7 @@ short_assembly Assembler::assemble(const string &sourceIn)
         }
         else if (instr[0] == '~')
         {
-            // Stack pop
+            // Stack pop (address-wise deletion)
             if (variables.count(prefix + instr.substr(1)) == 0 || memStack.top() != variables[prefix + instr.substr(1)].address)
             {
                 throw runtime_error("Cannot pop a variable which is not on the top of the stack");
@@ -511,6 +511,11 @@ short_assembly Assembler::assemble(const string &sourceIn)
 
             firstOpenAddress = memStack.top();
             memStack.pop();
+        }
+        else if (instr[0] == '@')
+        {
+            // Dealias (namewise deletion)
+            variables.erase(instr.substr(1));
         }
         else if (instr[0] == '_')
         {

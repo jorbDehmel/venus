@@ -2,7 +2,9 @@
 
 {main
     `*PAR u16
+    `*arg u16
     out *PAR $*PAR
+    out *arg $*arg
 
     #println First variable:
 
